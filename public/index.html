@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog avec BDD</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Créer un article</h1>
+
+    <form id="articleForm" class="form" enctype="multipart/form-data">
+      <input type="text" id="title" placeholder="Titre" required class="input">
+      <input type="file" id="image" accept="image/*" required class="input">
+      <textarea id="description" placeholder="Description" required class="textarea"></textarea>
+      <button type="submit" class="button">Créer l'article</button>
+    </form>
+
+    <h2 class="subtitle">Articles</h2>
+    <div id="articlesContainer" class="articles-container"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('articleForm');
+    const container = document.getElementById('articlesContainer');
+
+    async function fetchArticles() {
+      const res = await fetch('/api/articles');
+      const articles = await res.json();
+      container.innerHTML = '';
+      articles.reverse().forEach(renderArticle);
+    }
+
+    function renderArticle(article) {
+      const div = document.createElement('div');
+      div.className = 'article';
+      div.innerHTML = `
+        <h3 class="article-title">${article.title}</h3>
+        <img src="${article.image}" alt="image de l'article" class="article-image">
+        <p class="article-description">${article.description}</p>
+        <small class="article-date">Publié le : ${article.date}</small>
+      `;
+      container.appendChild(div);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append('title', document.getElementById('title').value);
+      formData.append('image', document.getElementById('image').files[0]);
+      formData.append('description', document.getElementById('description').value);
+
+      await fetch('/api/articles', {
+        method: 'POST',
+        body: formData
+      });
+
+      form.reset();
+      fetchArticles();
+    });
+
+    window.addEventListener('DOMContentLoaded', fetchArticles);
+  </script>
+</body>
+</html>
