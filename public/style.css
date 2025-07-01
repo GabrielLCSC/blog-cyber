@@ -96,8 +96,9 @@ body {
 }
 
 /* Responsive : 2 colonnes dès 768px */
-@media (min-width: 768px) {
+/* @media (min-width: 768px) {
   .articles-container {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+ */

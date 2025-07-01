@@ -11,7 +11,7 @@
 
     <form id="articleForm" class="form" enctype="multipart/form-data">
       <input type="text" id="title" placeholder="Titre" required class="input">
-      <input type="file" id="image" accept="image/*" required class="input">
+      <input type="file" id="images" accept="image/*" multiple required class="input">
       <textarea id="description" placeholder="Description" required class="textarea"></textarea>
       <button type="submit" class="button">Créer l'article</button>
     </form>
@@ -34,12 +34,17 @@
     function renderArticle(article) {
       const div = document.createElement('div');
       div.className = 'article';
+      const images = JSON.parse(article.image); // tableau d'images
+
+      const imageHTML = images.map(src => `<img src="${src}" class="article-image">`).join('');
+
       div.innerHTML = `
         <h3 class="article-title">${article.title}</h3>
-        <img src="${article.image}" alt="image de l'article" class="article-image">
+        ${imageHTML}
         <p class="article-description">${article.description}</p>
         <small class="article-date">Publié le : ${article.date}</small>
       `;
+
       container.appendChild(div);
     }
 
@@ -48,7 +53,11 @@
 
       const formData = new FormData();
       formData.append('title', document.getElementById('title').value);
-      formData.append('image', document.getElementById('image').files[0]);
+      const images = document.getElementById('images').files;
+      for (let i = 0; i < images.length; i++) {
+        formData.append('images', images[i]);
+      }
+
       formData.append('description', document.getElementById('description').value);
 
       await fetch('/api/articles', {

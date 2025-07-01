@@ -28,16 +28,24 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // POST avec image : multipart/form-data
-app.post('/api/articles', upload.single('image'), (req, res) => {
+app.post('/api/articles', upload.array('images'), (req, res) => {
   const { title, description } = req.body;
-  const image = req.file ? `/uploads/${req.file.filename}` : '';
-  const date = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
+  const date = new Date().toISOString();
 
-  const stmt = db.prepare('INSERT INTO articles (title, image, description, date) VALUES (?, ?, ?, ?)');
-  stmt.run([title, image, description, date], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ id: this.lastID, image });
-  });
+  const imagePaths = req.files.map(file => `/uploads/${file.filename}`);
+  const imagesJSON = JSON.stringify(imagePaths); // stocker un tableau
+
+  db.run(
+    'INSERT INTO articles (title, image, description, date) VALUES (?, ?, ?, ?)',
+    [title, imagesJSON, description, date],
+    function (err) {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).send('Erreur lors de la création de l\'article');
+      }
+      res.sendStatus(200);
+    }
+  );
 });
 
 
